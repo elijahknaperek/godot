@@ -934,10 +934,15 @@ void Node3D::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target
 	ERR_THREAD_GUARD;
 	ERR_FAIL_COND_MSG(p_pos.is_equal_approx(p_target), "Node origin and target are in the same position, look_at() failed.");
 	ERR_FAIL_COND_MSG(p_up.is_zero_approx(), "The up vector can't be zero, look_at() failed.");
-	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos).is_zero_approx(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
 
+	Basis lookat_basis;
 	Vector3 forward = p_target - p_pos;
-	Basis lookat_basis = Basis::looking_at(forward, p_up, p_use_model_front);
+	if ((p_up.cross(forward).is_zero_approx())) {
+		lookat_basis = Basis::looking_at(forward, Vector3(p_up.AXIS_Z, p_up.AXIS_X, -p_up.AXIS_Y), p_use_model_front);
+	} else {
+		lookat_basis = Basis::looking_at(forward, p_up, p_use_model_front);
+	}
+
 	Vector3 original_scale = get_scale();
 	set_global_transform(Transform3D(lookat_basis, p_pos));
 	set_scale(original_scale);
